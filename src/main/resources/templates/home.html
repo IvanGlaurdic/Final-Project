@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --highlight-color: #ffc107;
+            --primary-color: #004085;
+            --secondary-color: #007bff;
+            --background-color: #ECF0F1;
+            --text-color: #1f2e3a;
+
+            --accent-color: #079800;
+
+            --card-width: 100%;
+        }
+
+        /* General Styles */
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-brand, .navbar-nav .nav-link {
+            color: var(--background-color);
+        }
+        .navbar-nav .nav-link:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Search Bar Styles */
+        .search-bar {
+            margin: 20px 0;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #BDC3C7;
+            margin-bottom: 10px;
+        }
+        .search-bar button {
+            background-color: var(--secondary-color);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .search-bar button:hover {
+            background-color: #1ABC9C;
+        }
+
+        /* Card Styles */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .card-header {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 15px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        .price-rating-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .price {
+            color: var(--accent-color);
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .rating {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--highlight-color);
+        }
+        .description {
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .carousel-inner img {
+            width: 100%;
+            height: auto;
+            max-height: 250px; /* Fixed height */
+            object-fit: cover; /* Maintain aspect ratio */
+        }
+
+        /* Responsive Styling */
+        @media (max-width: 768px) {
+            .card {
+                flex-direction: column; /* Stack images and text vertically on small screens */
+            }
+            .card-header {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation bar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" href="#">Apartments</a>
+    <div class="navbar-collapse collapse">
+        <div class="navbar-nav ml-auto">
+            <a class="nav-item nav-link" th:if="${user == null}" th:href="@{/login}">Login</a>
+            <a class="nav-item nav-link" th:if="${user == null}" th:href="@{/register}">Register</a>
+            <a class="nav-item nav-link" th:if="${user != null}" th:href="@{/logout}">Logout</a>
+            <a class="nav-item nav-link" th:if="${user != null}" th:href="@{/account/{username}(username=${user.username})}" th:text="${user.username}">Username</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Search bar -->
+<div class="container">
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search apartments...">
+        <div class="d-flex justify-content-between mt-2">
+            <button id="sortAscBtn">Sort by Lowest Rating</button>
+            <button id="sortDescBtn">Sort by Highest Rating</button>
+        </div>
+    </div>
+</div>
+
+<!-- Apartment Cards -->
+<div class="container">
+    <div id="apartmentCards" class="row">
+        <div th:each="apartment : ${apartments}" class="col-12 mb-4"> <!-- Full-width row for each card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 th:text="${apartment.name}"></h2>
+                </div>
+                <div class="row no-gutters">
+                    <!-- Image Carousel (Left) -->
+                    <div class="col-md-4">
+                        <div id="carousel${apartment.id}" class="carousel slide" data-ride="carousel" data-interval="3000">
+                            <div class="carousel-inner">
+                                <div th:each="image, iterStat : ${apartment.imageURL}" class="carousel-item" th:classappend="${iterStat.index == 0} ? 'active' : ''">
+                                    <img th:src="'data:image/jpeg;base64,' + ${image.image_url}" class="d-block w-100" alt="Apartment Image"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Card Body (Right) -->
+                    <div class="col-md-8">
+                        <div class="card-body d-flex flex-column">
+                            <div class="price-rating-container">
+                                <p class="rating" th:text="${#numbers.formatDecimal(apartment.getRecenzija(), 0, 'COMMA', 2, 'POINT')} + ' ★'"></p>
+                                <p class="price" th:text="'€' + ${apartment.price}"></p>
+                            </div>
+                            <div class="description" th:text="${apartment.description}"></div>
+                            <div th:if="${user != null}" class="mt-auto text-center">
+                                <a class="btn btn-primary mt-3" th:href="@{/rezervacija/form(apartmentId=${apartment.id})}">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // JavaScript for filtering apartments by name
+    document.getElementById('searchInput').addEventListener('input', function() {
+        var input = this.value.toLowerCase();
+        var cards = document.getElementsByClassName('card');
+
+        Array.from(cards).forEach(function(card) {
+            var name = card.querySelector('.card-header h2').textContent.toLowerCase();
+            if (name.includes(input)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+
+    // JavaScript for sorting apartments by rating
+    document.getElementById('sortAscBtn').addEventListener('click', function() {
+        sortCards('asc');
+    });
+
+    document.getElementById('sortDescBtn').addEventListener('click', function() {
+        sortCards('desc');
+    });
+
+    function sortCards(order) {
+        var cardContainers = Array.from(document.querySelectorAll('#apartmentCards .col-12.mb-4')); // Select the entire .col-12.mb-4 elements
+        var cardContainerParent = document.getElementById('apartmentCards');
+
+        // Sort the card containers based on the rating inside their respective cards
+        cardContainers.sort(function(a, b) {
+            var ratingA = parseFloat(a.querySelector('.rating').textContent.split(' ')[0]);
+            var ratingB = parseFloat(b.querySelector('.rating').textContent.split(' ')[0]);
+            return order === 'asc' ? ratingA - ratingB : ratingB - ratingA;
+        });
+
+        // Append the sorted card containers back into the parent container
+        cardContainers.forEach(function(container) {
+            cardContainerParent.appendChild(container);
+        });
+    }
+</script>
+
+</body>
+</html>

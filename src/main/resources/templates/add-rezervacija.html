@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Reservation</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --highlight-color: #ffc107;
+            --primary-color: #004085;
+            --secondary-color: #007bff;
+            --background-color: #ECF0F1;
+            --text-color: #1f2e3a;
+
+            --accent-color: #079800;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-brand, .navbar-nav .nav-link {
+            color: var(--background-color);
+        }
+        .navbar-nav .nav-link:hover {
+            color: var(--secondary-color);
+        }
+
+
+
+        .card {
+            margin-bottom: 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            border-bottom: 1px solid #ddd;
+            color: var(--background-color);
+            font-weight: bold;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-weight: bold;
+        }
+
+        .price-rating-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .rating {
+            color: var(--highlight-color);
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .comment-card {
+            margin-bottom: 15px;
+        }
+
+        .comment-card .card-header {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .calendar {
+            margin: 10px 0;
+        }
+
+        .calendar th,
+        .calendar td {
+            border: 1px solid #ddd;
+            padding: 8px;
+
+        }
+
+        .calendar .reserved {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        #calendarContainer {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .card img {
+            width: 100%;      /* Full width of the parent container */
+            height: auto;     /* Maintain aspect ratio */
+        }
+
+        /* Image gallery styling */
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;        /* Adjust the gap between images as needed */
+        }
+
+        .image-gallery .col-6 {
+            flex: 1 1 calc(50% - 10px); /* Two images per row, considering the gap */
+        }
+
+        .image-gallery img {
+            width: 100%; /* Ensure image takes up full width of its container */
+            height: auto;
+            object-fit: cover; /* Ensure images cover the area without distortion */
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Navigation bar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" th:href="@{/}">Apartments</a>
+    <div class="navbar-collapse collapse">
+        <div class="navbar-nav ml-auto">
+            <a class="nav-item nav-link" th:if="${user == null}" th:href="@{/login}">Login</a>
+            <a class="nav-item nav-link" th:if="${user == null}" th:href="@{/register}">Register</a>
+            <a class="nav-item nav-link" th:if="${user != null}" th:href="@{/logout}">Logout</a>
+            <a class="nav-item nav-link" th:if="${user != null}" th:href="@{/account/{username}(username=${user.username})}" th:text="${user.username}">Username</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Image Gallery -->
+<div class="container mt-4">
+    <div class="card">
+        <div class="row g-0 image-gallery">
+            <div th:each="image, iterStat : ${apartment.imageURL}" class="col-6 p-1">
+                <img th:src="'data:image/jpeg;base64,' + ${image.image_url}" class="img-fluid rounded" alt="Apartment Image"/>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Apartment Information Card -->
+<div class="container mt-4">
+    <div class="card">
+        <div class="row g-0">
+            <div class="col-md-6">
+                <div class="card-body">
+                    <h3 class="card-title" th:text="${apartment.getName()}"></h3>
+                    <p th:text="${apartment.getDescription()}"></p>
+                    <div class="price-rating-container">
+                        <div class="price">
+                            <span th:text="${apartment.getPrice()} + ' €'"></span>
+                        </div>
+                        <div class="rating">
+                            <span th:text="${apartment.getRecenzija()}"></span> ★
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <!-- Calendar Holder and Reservation Form -->
+                <!-- These sections remain unchanged -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Calendar Holder -->
+    <h3 class="mt-5  font-weight-bold text-center">Colored out dates are reserved</h3>
+    <div id="calendarContainer" class="mb-5 d-flex justify-content-center"></div>
+
+
+    <!-- Reservation Form Card -->
+    <div class="card">
+        <div class="card-header">Fill in the form to make a Reservation</div>
+        <div class="card-body">
+            <form th:action="@{/rezervacija/add}" method="post" id="reservationForm">
+                <input type="hidden" id="apartmentId" name="apartmentId" th:value="${apartment.id}">
+                <input type="hidden" id="userId" name="userId" th:value="${user.id}">
+                <input type="hidden" id="actionType" name="actionType" value="">
+
+                <div class="row mb-3">
+                    <div class="col">
+                        <label for="arrivalDate" class="form-label">Arrival Date</label>
+                        <input type="date" id="arrivalDate" name="arrivalDate" class="form-control" required pattern="\d{4}-\d{2}-\d{2}" onchange="calculateTotalPrice()">
+                    </div>
+                    <div class="col">
+                        <label for="departureDate" class="form-label">Departure Date</label>
+                        <input type="date" id="departureDate" name="departureDate" class="form-control" required pattern="\d{4}-\d{2}-\d{2}" onchange="calculateTotalPrice()">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Total Price:</label>
+                    <span id="totalPrice" class="fw-bold" th:text="${rezervacija != null ? rezervacija.cijena : ''} + ' €'"></span>
+                    <input type="hidden" id="totalPriceInput" name="totalPrice" th:value="${rezervacija != null ? rezervacija.cijena : ''}">
+                </div>
+
+                <!-- Message Placeholder -->
+                <div id="message"  class="mt-3">
+                    <div class="alert alert-warning" th:if="${successMessage}!=null" th:text="${successMessage}" role="alert"></div>
+                </div>
+
+                <div class="mb-3 d-grid gap-2 d-md-block">
+                    <button type="button" class="btn btn-warning" id="deductDepositButton">Deduct Deposit & Reserve</button>
+                    <button type="button" class="btn btn-success" id="submitReservationButton">Pay All & Reserve</button>
+                    <button type="button" class="btn btn-primary" id="justReserveButton">Just Reserve & Pay Later</button>
+                </div>
+
+
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Comments Card -->
+    <div class="card">
+        <div class="card-header">Comments</div>
+        <div class="card-body d-flex flex-wrap">
+            <div th:if="${comments.size() > 0}" class="d-flex flex-wrap gap-3">
+                <div th:each="comment : ${comments}" th:if="${comment.getComment() != null && !comment.getComment().isEmpty()}" class="comment-card card" style="flex: 1 1 calc(33% - 1rem); width: 200px;">
+                    <div class="card-header d-flex justify-content-between">
+                        <span th:text="${comment.getUser() != null ? comment.getUser().getUsername() : 'Anonymous'}"></span>
+                        <span class="rating" th:text="${comment.getRecenzija()} + ' ★'"></span>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${comment.getComment()}"></p>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${comments.size() == 0}">
+                <p>No comments available.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+<script>
+
+
+
+
+
+
+    document.getElementById("deductDepositButton").addEventListener("click", function() {
+        handleFormSubmission('deposit');
+    });
+
+    document.getElementById("submitReservationButton").addEventListener("click", function() {
+        handleFormSubmission('fullPay');
+    });
+
+    document.getElementById("justReserveButton").addEventListener("click", function() {
+        handleFormSubmission('reserveOnly');
+    });
+
+    function handleFormSubmission(action) {
+        var arrivalDate = document.getElementById('arrivalDate').value;
+        var departureDate = document.getElementById('departureDate').value;
+        var apartmentId = document.getElementById('apartmentId').value;
+
+        if (!arrivalDate || !departureDate) {
+            showMessage('Please enter both dates.', 'danger');
+            return;
+        }
+
+        fetch(`/rezervacija/check-dates?apartmentId=${apartmentId}&arrivalDate=${encodeURIComponent(arrivalDate)}&departureDate=${encodeURIComponent(departureDate)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.available) {
+                    document.getElementById("actionType").value = action;
+                    if (action === 'deposit') {
+                        proceedWithDeposit();
+                    } else if (action === 'fullPay') {
+                        fullPay();
+                    } else if (action === 'reserveOnly') {
+                        document.getElementById("reservationForm").submit();
+                    }
+                } else {
+                    showMessage('The selected dates are already reserved.', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred. Please try again.', 'danger');
+            });
+    }
+
+    function proceedWithDeposit() {
+        const totalPrice = parseFloat(document.getElementById("totalPriceInput").value);
+        const depositAmount = totalPrice * 0.20;
+        const remainingAmount = totalPrice - depositAmount;
+
+        const reservationData = {
+            totalPrice: remainingAmount,
+            depositStatus: "true",
+            arrivalDate: document.getElementById("arrivalDate").value,
+            departureDate: document.getElementById("departureDate").value,
+        };
+
+        fetch("/rezervacija/deduct-deposit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(reservationData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `/rezervacija/payment?deposit=true&depositFlag=true&polog=${depositAmount}`;
+                } else {
+                    showMessage('Failed to deduct deposit. Please try again.', 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred. Please try again.', 'warning');
+            });
+    }
+
+    function fullPay() {
+        const totalPrice = parseFloat(document.getElementById("totalPriceInput").value);
+
+
+        const reservationData = {
+            totalPrice: totalPrice,
+            depositStatus: "true",
+            arrivalDate: document.getElementById("arrivalDate").value,
+            departureDate: document.getElementById("departureDate").value
+        };
+
+        fetch("/rezervacija/process-fullpay-data", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(reservationData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `/rezervacija/payment?deposit=true&depositFlag=true&polog=${totalPrice}`;
+                } else {
+                    showMessage('Failed to process full payment. Please try again.', 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred. Please try again.', 'warning');
+            });
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+    }
+
+    function calculateTotalPrice() {
+        const arrivalDate = document.getElementById("arrivalDate").value;
+        const departureDate = document.getElementById("departureDate").value;
+        const apartmentId = document.getElementById("apartmentId").value;
+
+        const requestBody = {
+            arrivalDate: arrivalDate,
+            departureDate: departureDate,
+            apartmentId: apartmentId
+        };
+
+        fetch("/calculate-price", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("totalPrice").innerText = data.totalPrice + " €";
+                document.getElementById("totalPriceInput").value = data.totalPrice;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('An error occurred while calculating the total price.', 'warning');
+            });
+    }
+
+    function createCalendarTable(month, reservedDates) {
+        const year = new Date().getFullYear();
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const table = document.createElement('table');
+        table.classList.add('calendar');
+
+        // Add month name as the header row
+        const monthNames = ['June', 'July', 'August', 'September'];
+        const monthHeaderRow = document.createElement('tr');
+        const monthHeaderCell = document.createElement('th');
+        monthHeaderCell.setAttribute('colspan', '7'); // Span the header across all days
+        monthHeaderCell.textContent = monthNames[month - 6]; // Adjust index to match months
+        monthHeaderRow.appendChild(monthHeaderCell);
+        table.appendChild(monthHeaderRow);
+
+        // Create table header with days of the week
+        const headerRow = document.createElement('tr');
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat','Sun'].forEach(day => {
+            const th = document.createElement('th');
+            th.textContent = day;
+            headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // Initialize date to the first day of the month
+        let date = new Date(year, month - 1, 1);
+
+        // Find the starting day of the week for the first day of the month
+        let startDayOfWeek = date.getDay();
+
+        // Adjust the starting day of the week to match Sunday as the first day (0-indexed)
+        startDayOfWeek = startDayOfWeek === 0 ? 7 : startDayOfWeek;
+
+        // Create table cells for each day of the month
+        let row = document.createElement('tr');
+        for (let i = 1; i < startDayOfWeek; i++) {
+            const cell = document.createElement('td');
+            row.appendChild(cell);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            if (startDayOfWeek > 7) {
+                table.appendChild(row);
+                row = document.createElement('tr');
+                startDayOfWeek = 1;
+            }
+            const cell = document.createElement('td');
+            cell.textContent = i;
+
+            // Format the date to match the reserved dates array
+            const dateString = formatDate(new Date(year, month - 1, i));
+            if (reservedDates.includes(dateString)) {
+                cell.classList.add('reserved'); // Add reserved class to reserved dates
+            }
+
+            row.appendChild(cell);
+            startDayOfWeek++;
+        }
+        table.appendChild(row);
+
+        return table;
+    }
+
+    // Function to format date as "YYYY-MM-DD"
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function createCalendars() {
+        const container = document.getElementById('calendarContainer');
+        const reservedDates = []; // Fetched reserved dates from the server
+
+        // Fetch reserved dates from the server
+        fetch("/rezervacija/reserved-dates?apartmentId=" + document.getElementById("apartmentId").value)
+            .then(response => response.json())
+            .then(data => {
+                reservedDates.push(...data);
+
+
+                for (let month = 6; month <= 9; month++) {
+                    const calendarTable = createCalendarTable(month, reservedDates);
+                    container.appendChild(calendarTable);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    // Call createCalendars function when the page loads
+    window.onload = () => {
+        createCalendars();
+    }
+    function disablePaymentButton() {
+        document.getElementById('paymentButton').disabled = true;
+    }
+</script>
+</body>
+</html>

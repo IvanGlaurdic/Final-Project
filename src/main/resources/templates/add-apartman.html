@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Apartment</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            background: #e6f7ff; /* Light blue background for the entire page */
+        }
+        .add-apartment-container {
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-apartment-form-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff; /* White background for the form area */
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+        }
+        .card-header {
+            background-color: #003d66; /* Dark blue background for the card header */
+            color: #ffffff; /* White text color */
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .card-title {
+            font-weight: bold;
+            color: #003d66; /* Dark blue for the title */
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #004080; /* Medium blue for labels */
+        }
+        .form-control {
+            border-radius: 5px;
+            border-color: #004080; /* Medium blue for input borders */
+        }
+        .btn-primary {
+            background-color: #007bff; /* Ocean blue for the button */
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            border-color: #004085;
+        }
+    </style>
+</head>
+<body>
+<div class="add-apartment-container">
+    <div class="add-apartment-form-wrapper">
+        <div class="card" th:if="${apartman != null}">
+            <div class="card-header">
+                <strong>Apartmani</strong>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Apartment Details</h5>
+                <form action="#" th:action="@{/apartman}" th:object="${apartman}" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" class="form-control" id="name" th:field="*{name}">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea class="form-control" id="description" rows="3" th:field="*{description}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price:</label>
+                        <input type="number" class="form-control" id="price" th:field="*{price}">
+                    </div>
+                    <div class="form-group">
+                        <label for="image">Images:</label>
+                        <input type="file" class="form-control-file" id="image" name="image" multiple>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Include Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

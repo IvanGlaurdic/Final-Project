@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payment Result</title>
+</head>
+<body>
+<h1>Payment Status: <span th:text="${status}"></span></h1>
+<p th:if="${error}">Error: <span th:text="${error}"></span></p>
+</body>
+</html>

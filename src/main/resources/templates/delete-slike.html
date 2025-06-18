@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Images for Apartment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #003d66;
+        }
+        h2 {
+            color: #003d66;
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .messages p {
+            color: #ff6347; /* Coral color for error messages */
+        }
+        .image-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .image-item {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .delete-button {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+<h1>Images for Apartment: <span th:text="${apartman.name}"></span></h1>
+
+<!-- Display Success or Error Messages -->
+<div class="messages">
+    <p th:if="${successMessage}" th:text="${successMessage}"></p>
+    <p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+</div>
+
+<div>
+    <div class="image-list">
+        <!-- Loop through images and display them -->
+        <div th:each="slika : ${slikeList}" class="image-item">
+            <!-- Display the image using base64 data -->
+            <img th:src="'data:image/png;base64,' + ${slika.image_url}" alt="Image" width="200"/>
+            <form th:action="@{/apartman/delete-image/{apartmanId}/{imageId}(apartmanId=${apartman.id}, imageId=${slika.id})}" method="post">
+                <button type="submit" class="delete-button">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

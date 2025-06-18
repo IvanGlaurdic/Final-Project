@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --highlight-color: #ffc107;
+            --primary-color: #004085;
+            --secondary-color: #007bff;
+            --background-color: #ECF0F1;
+            --text-color: #1f2e3a;
+
+            --accent-color: #079800;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-brand, .navbar-nav .nav-link {
+            color: var(--background-color);
+        }
+        .navbar-nav .nav-link:hover {
+            color: var(--secondary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" th:href="@{/}">Apartments</a>
+    <div class="navbar-collapse collapse">
+    </div>
+</nav>
+
+<!-- Main Container -->
+<div class="container mt-4">
+
+    <!-- Display Flash Message -->
+    <div th:if="${message != null}">
+        <div class="alert alert-info" role="alert" th:text="${message}"></div>
+    </div>
+
+    <!-- User Information Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">User Information</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered mb-0">
+                <tbody>
+                <tr>
+                    <th scope="row" style="width: 20%;">Name</th>
+                    <td>
+                        <span th:text="${user.getFirstName() + ' ' + user.getLastName()}">Full Name</span>
+                        <small class="text-muted" th:text="${'(' + user.getRole() + ')'}">(Role)</small>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Username</th>
+                    <td th:text="${user.getUsername()}">Username</td>
+                </tr>
+                <tr>
+                    <th scope="row">Email</th>
+                    <td th:text="${user.getEmail()}">Email</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <a href="/account/edit" class="btn btn-primary">Edit Account</a>
+            <a class="btn btn-primary float-end" th:if="${user.getRole() == 'admin'}" th:href="@{/apartman}">Add an Apartment</a>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card mb-4" th:if="${users != null}">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Users</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users}">
+                        <td th:text="${user.getFirstName()} + ' ' + ${user.getLastName()}">Full Name</td>
+                        <td th:text="${user.getEmail()}">Email</td>
+                        <td th:text="${user.getRole()}">Role</td>
+                        <td>
+                            <form th:action="@{/account/delete-user/{username}(username=${user.getUsername()})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apartments Table -->
+    <div class="card mb-4" th:if="${apartmani != null}">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Apartments</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="apartman : ${apartmani}">
+                        <td th:text="${apartman.getName()}">Apartment Name</td>
+                        <td th:text="${apartman.getDescription()}">Description</td>
+                        <td th:text="${apartman.getPrice()}">Price</td>
+                        <td>
+                            <a class="btn btn-primary btn-sm me-1" th:href="@{/apartman/add-image/{name}(name=${apartman.getName()})}">Add Picture</a>
+                            <a class="btn btn-info btn-sm me-1" th:href="@{/apartman/images/{name}(name=${apartman.getName()})}">Delete Picture</a>
+                            <a th:if="${user.role == 'admin'}" th:href="@{/apartman/edit/{id}(id=${apartman.id})}" class="btn btn-warning btn-sm me-1">Edit</a>
+                            <form th:action="@{/apartman/delete/{id}(id=${apartman.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservations Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Reservations</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead>
+                    <tr>
+                        <th>Apartment</th>
+                        <th>Check-In Date</th>
+                        <th>Check-Out Date</th>
+                        <th>User</th>
+                        <th>Payment Status</th>
+                        <th>Deposit Status</th>
+                        <th>Reservation Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="reservation : ${rezervacije}">
+                        <td th:text="${reservation.apartman.name}">Apartment Name</td>
+                        <td th:text="${reservation.datumDolaska}">Check-In Date</td>
+                        <td th:text="${reservation.datumOdlaska}">Check-Out Date</td>
+                        <td th:text="${reservation.user.username}">User</td>
+                        <td th:text="${reservation.paymentStatus == null ? 'Not Paid' : 'Paid'}">Payment Status</td>
+                        <td th:text="${reservation.pologStatus == 'true' ? 'Deposit Paid' : 'Deposit Not Paid'}">Deposit Status</td>
+                        <td th:text="${reservation.rezervacijaStatus}">Reservation Status</td>
+                        <td>
+                            <!-- Rating Form -->
+                            <div th:if="${user.getUsername() == reservation.user.getUsername()}">
+                                <form th:action="@{/account/reservation-rating/{reservationId}(reservationId=${reservation.id})}" method="post" class="mb-2">
+                                    <div class="mb-2">
+                                        <label for="comment-${reservation.id}" class="form-label">Comment:</label>
+                                        <input type="text" name="comment" id="comment-${reservation.id}" class="form-control" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="rating-${reservation.id}" class="form-label">Rating:</label>
+                                        <input type="number" name="rating" id="rating-${reservation.id}" class="form-control" min="0" max="5" step="1" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger btn-sm">Submit Rating</button>
+                                </form>
+                            </div>
+
+                            <!-- Cancel Button for User -->
+                            <div th:if="${user.getUsername() == reservation.user.getUsername() && reservation.rezervacijaStatus != 'Canceled'}" class="mb-2">
+                                <form th:action="@{/account/cancel-reservation/{reservationId}(reservationId=${reservation.id})}" method="post">
+                                    <button type="submit" class="btn btn-warning btn-sm">Cancel</button>
+                                </form>
+                            </div>
+
+                            <!-- Admin Cancel Button -->
+                            <div th:if="${user.role == 'admin' && reservation.rezervacijaStatus != 'Canceled' && reservation.pologStatus == 'false'}" class="mb-2">
+                                <form th:action="@{/account/cancel-reservation/{reservationId}(reservationId=${reservation.id})}" method="post">
+                                    <button type="submit" class="btn btn-warning btn-sm">Admin Cancel</button>
+                                </form>
+                            </div>
+
+                            <!-- Delete Button for Admin -->
+                            <div th:if="${user.role == 'admin'}" class="mb-2">
+                                <form th:action="@{/account/delete-reservation/{reservationId}(reservationId=${reservation.id})}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+
+                            <!-- Refund Button for Admin -->
+                            <div th:if="${user.role == 'admin' && reservation.rezervacijaStatus == 'Canceled' && reservation.paymentStatus != null}" class="mb-2">
+                                <form th:action="@{/rezervacija/refund-reservation}" method="get">
+                                    <input type="hidden" name="reservationId" th:value="${reservation.id}">
+                                    <button type="submit" class="btn btn-success btn-sm">Refund</button>
+                                </form>
+                            </div>
+
+                            <!-- Pay Deposit Button -->
+                            <div th:if="${reservation.rezervacijaStatus != 'Canceled'}">
+                                <form th:if="${reservation.pologStatus == 'false' && reservation.paymentStatus == null && user.username == reservation.user.username}"
+                                      th:action="@{/rezervacija/additional-deposit-payment}" method="get" class="mb-2">
+                                    <input type="hidden" name="reservationId" th:value="${reservation.id}">
+                                    <button type="submit" class="btn btn-success btn-sm">Pay Deposit</button>
+                                </form>
+
+                                <!-- Pay in Full Button -->
+                                <form th:if="${reservation.pologStatus == 'true' && reservation.paymentStatus == null && user.username == reservation.user.username}"
+                                      th:action="@{/rezervacija/additional-full-payment}" method="get" class="mb-2">
+                                    <input type="hidden" name="reservationId" th:value="${reservation.id}">
+                                    <button type="submit" class="btn btn-success btn-sm">Pay in Full</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div> <!-- End of Main Container -->
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
