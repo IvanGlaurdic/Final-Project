@@ -43,7 +43,8 @@ This apartment booking web app includes a rich set of functionalities to ensure 
 - Payment transactions  
 - Administrator logs  
 
-(*ER diagrams or schema visualizations can be added here if available.*)
+![image](https://github.com/user-attachments/assets/25980193-d5f2-4096-ba86-0be1f627e159)
+
 
 ## Technologies Used  
 The application is developed using a modern and robust tech stack:  
@@ -61,5 +62,4 @@ The application is developed using a modern and robust tech stack:
 - Bootstrap  
 
 ## Project Team  
-**Team Name:** Dostavljaci  
 - Ivan Glaurdić (ivan24glaurdic@gmail.com)
